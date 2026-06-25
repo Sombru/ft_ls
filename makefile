@@ -10,7 +10,6 @@ LIBFT = libft/libft.a
 # Sources
 SRC = main.c 
 
-
 # Objects
 OBJ_PATH = obj/
 OBJ 	 = $(SRC:.c=.o) 
