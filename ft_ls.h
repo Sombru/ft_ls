@@ -34,7 +34,7 @@ t_flags	*parse_ls_flags(int argc, char *argv[]);
 t_entry	*get_entries(const char *path);
 t_entry	*new_entry(const struct dirent *dir_entry);
 int		append_entry(t_entry **entries, t_entry *new);
-void	list_entries(t_entry *entries);
+void	list_entries(t_entry *entries, t_flags *flags);
 void	free_entries(t_entry *entries);
 void	print_flags(const t_flags *flags);
 
