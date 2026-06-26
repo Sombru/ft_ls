@@ -8,7 +8,7 @@ FLAGS = -g -Wall -Wextra -Werror -I libft/
 LIBFT = libft/libft.a
 
 # Sources
-SRC = main.c 
+SRC = main.c parse.c
 
 # Objects
 OBJ_PATH = obj/
@@ -31,6 +31,7 @@ $(NAME): $(OBJS)
 bonus: $(OBJ_PATH) $(LIBFT) $(BONUS_NAME)
 
 $(LIBFT):
+	git submodule update --init 
 	make -C libft --no-print-directory
 
 clean:
