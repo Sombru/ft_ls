@@ -1,5 +1,10 @@
 #include "ft_ls.h"
 
+// single entrypoint for simple recursion
+// void ft_ls(t_flags *flags, char* args[])
+// {
+// }
+
 int main(int argc, char* argv[])
 {
 	t_flags	*flags;
