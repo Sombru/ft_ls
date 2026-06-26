@@ -8,7 +8,7 @@ FLAGS = -g -Wall -Wextra -Werror -I libft/
 LIBFT = libft/libft.a
 
 # Sources
-SRC = main.c parse.c
+SRC = main.c parse.c get_entries.c list_entries.c
 
 # Objects
 OBJ_PATH = obj/

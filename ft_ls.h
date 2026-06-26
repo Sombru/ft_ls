@@ -3,6 +3,7 @@
 
 #include <sys/types.h>
 #include <dirent.h>
+#include <stdio.h>
 #include <stdbool.h>
 #include "libft.h"
 
@@ -21,7 +22,20 @@ typedef struct s_flags
 	
 } t_flags ;
 
+typedef struct s_entries
+{
+	struct dirent		*entry;
+	struct s_entries	*next;
+	
+} t_entry;
+
+
 t_flags	*parse_ls_flags(int argc, char *argv[]);
+t_entry	*get_entries(const char *path);
+t_entry	*new_entry(const struct dirent *dir_entry);
+int		append_entry(t_entry **entries, t_entry *new);
+void	list_entries(t_entry *entries);
+void	free_entries(t_entry *entries);
 void	print_flags(const t_flags *flags);
 
 #endif
