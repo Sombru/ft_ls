@@ -1,8 +1,8 @@
 #include "ft_ls.h"
 
-void	free_entries(t_entry *entries)
+void	free_entries(t_entries *entries)
 {
-	t_entry	*next;
+	t_entries	*next;
 
 	while (entries)
 	{
@@ -13,11 +13,11 @@ void	free_entries(t_entry *entries)
 	}
 }
 
-t_entry	*new_entry(const struct dirent *dir_entry)
+t_entries	*new_entry(const struct dirent *dir_entry)
 {
-	t_entry	*new;
+	t_entries	*new;
 
-	new = ft_calloc(1, sizeof(t_entry));
+	new = ft_calloc(1, sizeof(t_entries));
 	if (!new)
 		return (NULL);
 	new->entry = ft_calloc(1, sizeof(struct dirent));
@@ -30,9 +30,9 @@ t_entry	*new_entry(const struct dirent *dir_entry)
 	return (new);
 }
 
-int	append_entry(t_entry **entries, t_entry *new)
+int	append_entry(t_entries **entries, t_entries *new)
 {
-	t_entry	*current;
+	t_entries	*current;
 
 	if (!entries || !new)
 		return (0);
@@ -48,12 +48,12 @@ int	append_entry(t_entry **entries, t_entry *new)
 	return (1);
 }
 
-t_entry	*get_entries(const char *path)
+t_entries	*get_entries(const char *path)
 {
 	DIR				*dir;
 	struct dirent	*dir_entry;
-	t_entry			*entries;
-	t_entry			*new;
+	t_entries			*entries;
+	t_entries			*new;
 
 	dir = opendir(path);
 	if (!dir)

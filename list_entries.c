@@ -1,7 +1,7 @@
 #include "ft_ls.h"
 
 
-void	list_entries(t_entry *entries, t_flags *flags)
+void	list_entries(t_entries *entries, t_flags *flags)
 {
 	while (entries)
 	{

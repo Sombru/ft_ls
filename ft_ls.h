@@ -27,15 +27,15 @@ typedef struct s_entries
 	struct dirent		*entry;
 	struct s_entries	*next;
 	
-} t_entry;
+} t_entries;
 
 
 t_flags	*parse_ls_flags(int argc, char *argv[]);
-t_entry	*get_entries(const char *path);
-t_entry	*new_entry(const struct dirent *dir_entry);
-int		append_entry(t_entry **entries, t_entry *new);
-void	list_entries(t_entry *entries, t_flags *flags);
-void	free_entries(t_entry *entries);
+t_entries	*get_entries(const char *path);
+t_entries	*new_entry(const struct dirent *dir_entry);
+int		append_entry(t_entries **entries, t_entries *new);
+void	list_entries(t_entries *entries, t_flags *flags);
+void	free_entries(t_entries *entries);
 void	print_flags(const t_flags *flags);
 
 #endif
