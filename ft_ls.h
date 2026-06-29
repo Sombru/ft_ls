@@ -38,6 +38,6 @@ void	free_entries(t_entries *entries);
 void	print_flags(const t_flags *flags);
 void	print_array(char **array);
 
-char **get_dirs(t_entries *entries, int dir_count);
-int count_dirs(t_entries *entries);
+char	**get_dirs(t_entries *entries, int dir_count, char *parent_path);
+int		count_dirs(t_entries *entries);
 #endif

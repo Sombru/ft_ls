@@ -50,10 +50,10 @@ int	append_entry(t_entries **entries, t_entries *new)
 
 t_entries	*get_entries(const char *path)
 {
-	DIR				*dir;
 	struct dirent	*dir_entry;
-	t_entries			*entries;
-	t_entries			*new;
+	t_entries		*entries;
+	t_entries		*new;
+	DIR				*dir;
 
 	dir = opendir(path);
 	if (!dir)
