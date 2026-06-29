@@ -18,9 +18,8 @@ typedef struct s_flags
 	bool t_time; // sort by time newset -> oldest
 	bool u_sort; // sort by access time
 	bool U_sort; // do not sort, list in directory order
-	bool g_list; // like -l bit without the owner
-	
-} t_flags ;
+	bool g_list; // like -l but without the owner
+}	t_flags;
 
 typedef struct s_entries
 {
@@ -30,15 +29,15 @@ typedef struct s_entries
 } t_entries;
 
 
-t_flags	*parse_ls_flags(int argc, char *argv[]);
+char	**parse_ls(t_flags *flags, int argc, char *argv[]);
 t_entries	*get_entries(const char *path);
 t_entries	*new_entry(const struct dirent *dir_entry);
 int		append_entry(t_entries **entries, t_entries *new);
 void	list_entries(t_entries *entries, t_flags *flags);
 void	free_entries(t_entries *entries);
 void	print_flags(const t_flags *flags);
+void	print_array(char **array);
 
 char **get_dirs(t_entries *entries, int dir_count);
 int count_dirs(t_entries *entries);
-
 #endif

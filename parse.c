@@ -9,65 +9,61 @@ static int	print_invalid_option(char option)
 	return (0);
 }
 
-static int	set_flag(t_flags *flags, char option)
+static void	set_flag(t_flags *flags, char option)
 {
-	if (option == 'a')
-		flags->a_all = true;
-	else if (option == 'd')
-		flags->d_directories = true;
-	else if (option == 'f')
+	switch (option)
 	{
-		flags->f_list = true;
-		flags->a_all = true;
-		flags->U_sort = true;
+		case 'a':
+			flags->a_all = true;
+			break;
+		case 'd':
+			flags->d_directories = true;
+			break;
+		case 'f':
+			flags->f_list = true;
+			flags->a_all = true;
+			flags->U_sort = true;
+			break;
+		case 'l':
+			flags->l_list = true;
+			break;
+		case 'R':
+			flags->R_recursive = true;
+			break;
+		case 'r':
+			flags->r_reverse = true;
+			break;
+		case 't':
+			flags->t_time = true;
+			break;
+		case 'u':
+			flags->u_sort = true;
+			break;
+		case 'U':
+			flags->U_sort = true;
+			break;
+		case 'g':
+			flags->g_list = true;
+			break;
+		default:
+			print_invalid_option(option);
+			break;
 	}
-	else if (option == 'l')
-		flags->l_list = true;
-	else if (option == 'R')
-		flags->R_recursive = true;
-	else if (option == 'r')
-		flags->r_reverse = true;
-	else if (option == 't')
-		flags->t_time = true;
-	else if (option == 'u')
-		flags->u_sort = true;
-	else if (option == 'U')
-		flags->U_sort = true;
-	else if (option == 'g')
-	{
-		flags->g_list = true;
-		flags->l_list = true;
-	}
-	else
-		return (print_invalid_option(option));
-	return (1);
 }
 
-t_flags	*parse_ls_flags(int argc, char *argv[])
+char	**parse_ls(t_flags *flags, int argc, char *argv[])
 {
-	t_flags	*flags;
-	int		i;
-	int		j;
-
-	flags = ft_calloc(1, sizeof(t_flags));
-	if (!flags)
-		return (NULL);
-	i = 1;
-	while (i < argc && argv[i][0] == '-' && argv[i][1] != '\0')
+	char **args = ft_calloc(argc, sizeof(char *) * argc);
+	ft_memset(flags, 0, sizeof(flags));
+	int k = 0;
+	for (int i = 1; i < argc; ++i)
 	{
-		if (ft_strcmp(argv[i], "--") == 0)
-			return (flags);
-		j = 1;
-		while (argv[i][j] != '\0')
-		{
-			if (!set_flag(flags, argv[i][j]))
-			{
-				free(flags);
-				return (NULL);
-			}
-			j++;
-		}
-		i++;
+		if (argv[i][0] == '-')
+			set_flag(flags, argv[i][1]);
+		else
+			args[k++] = argv[i]; 
 	}
-	return (flags);
+	if (args[0] == 0)
+		args[0] = ".";
+	return (args);
 }

@@ -24,21 +24,13 @@ void ft_ls(t_flags *flags, char **args, int argc)
 
 int main(int argc, char* argv[])
 {
-	t_flags	*flags;
-
-	flags = parse_ls_flags(argc, argv);
-	if (!flags)
-		return (1);
-	if (argc == 1)
-	{
-		char *args[4] = {".", NULL};
-		ft_ls(flags, args, argc);
-	}
-	else
-	{
-		ft_ls(flags, &argv[1], argc - 1);
-	}
-	free(flags);
+	t_flags	flags;
+	char 	**args;
+	args =  parse_ls(&flags, argc, argv);
+	print_array(args);
+	for (int i = 0; args[i]; ++i)
+		argc = i;
+	ft_ls(&flags, args, argc);
 	return (0);
 	
 }
