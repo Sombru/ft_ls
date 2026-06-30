@@ -12,7 +12,7 @@ void	list_entries(t_entries *entries, t_flags *flags)
 		}
 		ft_putstr_fd(entries->entry->d_name, 1);
 		if (entries->next)
-			ft_putstr_fd("  ", 1);
+				ft_printf("\n");
 		entries = entries->next;
 	}
 	ft_putchar_fd('\n', 1);
