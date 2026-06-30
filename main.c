@@ -9,6 +9,7 @@ void ft_ls(t_flags *flags, char **args, int argc)
 	for (int i = 0; i < argc; ++i)
 	{
 		entries_arr[i] = get_entries(args[i]);
+		entries_arr[i] = sort(entries_arr[i], flags);
 		ft_printf("%s:\n", args[i]);
 		list_entries(entries_arr[i], flags);
 		ft_printf("\n");

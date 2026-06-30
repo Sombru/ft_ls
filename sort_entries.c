@@ -1,24 +1,28 @@
 #include "ft_ls.h"
 
-typedef int (*t_cmp_entries)(t_entries *a, t_entries *b);
+// typedef int (*t_cmp_entries)(t_entries *a, t_entries *b);
 
 static int	cmp_alpha(t_entries *a, t_entries *b)
 {
 	return (ft_strcmp(a->entry->d_name, b->entry->d_name));
 }
 
-// static int	cmp_time(t_entries *a, t_entries *b)
-// {
-// 	if (a->st.st_mtime > b->st.st_mtime)
-// 		return (-1);
-// 	if (a->st.st_mtime < b->st.st_mtime)
-// 		return (1);
-// 	return (cmp_alpha(a, b));
-// }
-
-static int	cmp_reverse(t_entries *a, t_entries *b, t_cmp_entries cmp)
+static int	cmp_time(t_entries *a, t_entries *b)
 {
-	return (-cmp(a, b));
+	if (a->st.st_mtime > b->st.st_mtime)
+		return (-1);
+	if (a->st.st_mtime < b->st.st_mtime)
+		return (1);
+	return (cmp_alpha(a, b));
+}
+
+static int	cmp_access_time(t_entries *a, t_entries *b)
+{
+	if (a->st.st_atime > b->st.st_atime)
+		return (-1);
+	if (a->st.st_atime < b->st.st_atime)
+		return (1);
+	return (cmp_alpha(a, b));
 }
 
 static void	split_list(t_entries *src, t_entries **left, t_entries **right)
@@ -42,7 +46,7 @@ static void	split_list(t_entries *src, t_entries **left, t_entries **right)
 	slow->next = NULL;
 }
 
-static t_entries	*merge_lists(t_entries *a, t_entries *b, t_cmp_entries cmp)
+static t_entries	*merge_lists(t_entries *a, t_entries *b, int (*cmp)(t_entries *a, t_entries *b))
 {
 	t_entries	dummy;
 	t_entries	*tail;
@@ -70,20 +74,12 @@ static t_entries	*merge_lists(t_entries *a, t_entries *b, t_cmp_entries cmp)
 	return (dummy.next);
 }
 
-// default ls sorts alphabetically
-t_entries *sort(t_entries **entries, t_flags *flags)
-{
-	entries = sort_entries(entries, cmp_alpha);
-}
-t_entries	*sort_entries(t_entries *list, t_flags *flags)
+static t_entries	*sort_entries(t_entries *list, int (*cmp)(t_entries *a, t_entries *b))
 {
 	t_entries	*left;
 	t_entries	*right;
-	t_cmp_entries cmp;
 
-	cmp = cmp_alpha;
-
-	if (!list || !list->next)
+	if (!list || !list->next || !cmp)
 		return (list);
 	split_list(list, &left, &right);
 	left = sort_entries(left, cmp);
@@ -91,3 +87,36 @@ t_entries	*sort_entries(t_entries *list, t_flags *flags)
 	return (merge_lists(left, right, cmp));
 }
 
+static t_entries	*reverse_entries(t_entries *entries)
+{
+	t_entries	*prev;
+	t_entries	*next;
+
+	prev = NULL;
+	while (entries)
+	{
+		next = entries->next;
+		entries->next = prev;
+		prev = entries;
+		entries = next;
+	}
+	return (prev);
+}
+
+// default ls sorts alphabetically
+t_entries *sort(t_entries *entries, t_flags *flags)
+{
+	int (*cmp)(t_entries *, t_entries *) = cmp_alpha; // comparator function
+
+	if (flags->U_sort)
+		cmp = NULL;
+	else if (flags->u_sort)
+		cmp = cmp_access_time;
+	else if (flags->t_time)
+		cmp = cmp_time;
+		
+	entries = sort_entries(entries, cmp);
+	if (flags->r_reverse && !flags->U_sort)
+		entries = reverse_entries(entries);
+	return entries;
+}
