@@ -10,7 +10,8 @@ void ft_ls(t_flags *flags, char **args, int argc)
 	{
 		entries_arr[i] = get_entries(args[i]);
 		entries_arr[i] = sort(entries_arr[i], flags);
-		ft_printf("%s:\n", args[i]);
+		if (argc > 1 || flags->R_recursive)
+			ft_printf("%s:\n", args[i]);
 		list_entries(entries_arr[i], flags);
 		ft_printf("\n");
 	}

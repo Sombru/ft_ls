@@ -7,6 +7,7 @@ void free_entries(t_entries *entries)
 	while (entries)
 	{
 		next = entries->next;
+		free(entries->path);
 		free(entries->entry);
 		free(entries);
 		entries = next;
@@ -28,7 +29,8 @@ static char	*join_path(const char *parent, const char *child)
 	return (path);
 }
 
-static t_entries *new_entry(const struct dirent *dir_entry, struct stat *st)
+static t_entries *new_entry(const struct dirent *dir_entry, char *path,
+		struct stat *st)
 {
 	t_entries *new;
 
@@ -36,9 +38,12 @@ static t_entries *new_entry(const struct dirent *dir_entry, struct stat *st)
 	if (!new)
 		return (NULL);
 	new->entry = ft_calloc(1, sizeof(struct dirent));
+	new->path = ft_strdup(path);
 	new->st = *st;
-	if (!new->entry)
+	if (!new->entry || !new->path)
 	{
+		free(new->path);
+		free(new->entry);
 		free(new);
 		return (NULL);
 	}
@@ -92,8 +97,8 @@ t_entries *get_entries(const char *path)
 			closedir(dir);
 			return (NULL);
 		}
+		new = new_entry(dir_entry, entry_path, &st);
 		free(entry_path);
-		new = new_entry(dir_entry, &st);
 		if (!new || !append_entry(&entries, new))
 		{
 			free_entries(entries);

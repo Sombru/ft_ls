@@ -3,14 +3,19 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/ioctl.h>
 #include <dirent.h>
+#include <grp.h>
+#include <pwd.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <time.h>
 #include "libft.h"
 
 typedef struct s_flags
 {
 	bool a_all; // list hidden 
+	bool f_1; // force one_per_line
 	bool d_directories; // list directories themselves, not their contents (ls -d *)
 	bool f_list; // enable -aU
 	bool l_list; // long list 
@@ -25,6 +30,7 @@ typedef struct s_flags
 typedef struct s_entries
 {
 	struct dirent		*entry;
+	char				*path;
 	struct stat			st;
 	struct s_entries	*next;
 	

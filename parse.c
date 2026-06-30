@@ -5,7 +5,7 @@ static int	print_invalid_option(char option)
 	ft_putstr_fd("ft_ls: illegal option -- ", 2);
 	ft_putchar_fd(option, 2);
 	ft_putchar_fd('\n', 2);
-	ft_putstr_fd("usage: ft_ls [-adflRrtuUg] [file ...]\n", 2);
+	ft_putstr_fd("usage: ft_ls [-1adflRrtuUg] [file ...]\n", 2);
 	return (0);
 }
 
@@ -45,6 +45,9 @@ static void	set_flag(t_flags *flags, char option)
 		case 'g':
 			flags->g_list = true;
 			break;
+		case '1':
+			flags->f_1 = true;
+			break;
 		default:
 			print_invalid_option(option);
 			break;
@@ -54,12 +57,17 @@ static void	set_flag(t_flags *flags, char option)
 char	**parse_ls(t_flags *flags, int argc, char *argv[])
 {
 	char **args = ft_calloc(argc, sizeof(char *) * argc);
-	ft_memset(flags, 0, sizeof(flags));
+	ft_memset(flags, 0, sizeof(*flags));
 	int k = 0;
+	int j;
 	for (int i = 1; i < argc; ++i)
 	{
 		if (argv[i][0] == '-')
-			set_flag(flags, argv[i][1]);
+		{
+			j = 1;
+			while (argv[i][j])
+				set_flag(flags, argv[i][j++]);
+		}
 		else
 			args[k++] = argv[i]; 
 	}
