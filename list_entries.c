@@ -14,58 +14,6 @@ static int	get_terminal_width(void)
 	return (ws.ws_col);
 }
 
-static int	count_visible_entries(t_entries *entries, t_flags *flags)
-{
-	int	count;
-
-	count = 0;
-	while (entries)
-	{
-		if (is_visible(entries, flags))
-			count++;
-		entries = entries->next;
-	}
-	return (count);
-}
-
-static int	get_max_name_len(t_entries *entries, t_flags *flags)
-{
-	int	len;
-	int	max;
-
-	max = 0;
-	while (entries)
-	{
-		if (is_visible(entries, flags))
-		{
-			len = ft_strlen(entries->entry->d_name);
-			if (len > max)
-				max = len;
-		}
-		entries = entries->next;
-	}
-	return (max);
-}
-
-static t_entries	**entries_to_array(t_entries *entries, t_flags *flags,
-		int count)
-{
-	t_entries	**array;
-	int			i;
-
-	array = malloc(sizeof(t_entries *) * count);
-	if (!array)
-		return (NULL);
-	i = 0;
-	while (entries)
-	{
-		if (is_visible(entries, flags))
-			array[i++] = entries;
-		entries = entries->next;
-	}
-	return (array);
-}
-
 static char	*get_column_format(int col_width)
 {
 	char	*width;
@@ -372,57 +320,27 @@ static void	list_long(t_entries *entries, t_flags *flags)
 	}
 }
 
-static void list_rows(t_entries *entries, t_flags *flags)
+static void list_columns(t_entries *entries, t_flags *flags)
 {
-	t_entries	**array;
-	char		*format;
-	int			count;
-	int			col_width;
-	int			cols;
-	int			rows;
-	int			i;
-	int			row;
-	int			col;
-
-	count = count_visible_entries(entries, flags);
-	if (count == 0)
-		return ;
-	col_width = get_max_name_len(entries, flags) + 2;
-	cols = get_terminal_width() / col_width;
-	if (cols < 1)
-		cols = 1;
-	rows = (count + cols - 1) / cols;
-	array = entries_to_array(entries, flags, count);
-	if (!array)
-		return (list_one_per_line(entries, flags));
-	format = get_column_format(col_width);
-	if (!format)
+	int bytes_printed = 0;
+	while (entries)
 	{
-		free(array);
-		return (list_one_per_line(entries, flags));
-	}
-	row = 0;
-	while (row < rows)
-	{
-		col = 0;
-		while (col < cols)
+		if (!flags->a_all && entries->entry->d_name[0] == '.')
 		{
-			i = row + (col * rows);
-			if (i < count)
-			{
-				if (col + 1 < cols && row + ((col + 1) * rows) < count)
-					ft_printf(format, array[i]->entry->d_name);
-				else
-					ft_putstr_fd(array[i]->entry->d_name, 1);
-			}
-			col++;
+			entries = entries->next;
+			continue;
 		}
-		ft_putchar_fd('\n', 1);
-		row++;
+		if (entries->next &&
+			(int)ft_strlen(entries->entry->d_name) + bytes_printed > get_terminal_width())
+		{
+			bytes_printed = 0;
+			ft_putchar_fd('\n', 1);
+		}
+		bytes_printed += ft_printf("%-s  ", entries->entry->d_name);
+		entries = entries->next;
 	}
-	free(format);
-	free(array);
 }
+
 
 void	list_entries(t_entries *entries, t_flags *flags)
 {
@@ -431,5 +349,5 @@ void	list_entries(t_entries *entries, t_flags *flags)
 	else if (!isatty(1) || flags->f_1)
 		list_one_per_line(entries, flags);
 	else
-		list_rows(entries, flags);
+		list_columns(entries, flags);
 }
