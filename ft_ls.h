@@ -15,6 +15,7 @@
 typedef struct s_flags
 {
 	bool a_all; // list hidden 
+	bool C_list; // force listing by columns
 	bool f_1; // force one_per_line
 	bool d_directories; // list directories themselves, not their contents (ls -d *)
 	bool f_list; // enable -aU

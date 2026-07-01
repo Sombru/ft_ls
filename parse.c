@@ -48,6 +48,9 @@ static void	set_flag(t_flags *flags, char option)
 		case '1':
 			flags->f_1 = true;
 			break;
+		case 'C':
+			flags->C_list = true;
+			break;
 		default:
 			print_invalid_option(option);
 			break;
@@ -56,10 +59,12 @@ static void	set_flag(t_flags *flags, char option)
 
 char	**parse_ls(t_flags *flags, int argc, char *argv[])
 {
-	char **args = ft_calloc(argc, sizeof(char *) * argc);
+	char **args = ft_calloc(argc + 1, sizeof(char *));
 	ft_memset(flags, 0, sizeof(*flags));
 	int k = 0;
 	int j;
+	if (!args)
+		return (NULL);
 	for (int i = 1; i < argc; ++i)
 	{
 		if (argv[i][0] == '-')
@@ -69,9 +74,22 @@ char	**parse_ls(t_flags *flags, int argc, char *argv[])
 				set_flag(flags, argv[i][j++]);
 		}
 		else
-			args[k++] = argv[i]; 
+		{
+			args[k] = ft_strdup(argv[i]);
+			if (!args[k])
+			{
+				ft_free_array(args);
+				return (NULL);
+			}
+			k++;
+		}
 	}
 	if (args[0] == 0)
-		args[0] = ".";
+		args[0] = ft_strdup(".");
+	if (!args[0])
+	{
+		ft_free_array(args);
+		return (NULL);
+	}
 	return (args);
 }

@@ -320,33 +320,186 @@ static void	list_long(t_entries *entries, t_flags *flags)
 	}
 }
 
-static void list_columns(t_entries *entries, t_flags *flags)
+static int	count_visible(t_entries *entries, t_flags *flags)
 {
-	int bytes_printed = 0;
+	int	count;
+
+	count = 0;
 	while (entries)
 	{
-		if (!flags->a_all && entries->entry->d_name[0] == '.')
-		{
-			entries = entries->next;
-			continue;
-		}
-		if (entries->next &&
-			(int)ft_strlen(entries->entry->d_name) + bytes_printed > get_terminal_width())
-		{
-			bytes_printed = 0;
-			ft_putchar_fd('\n', 1);
-		}
-		bytes_printed += ft_printf("%-s  ", entries->entry->d_name);
+		if (is_visible(entries, flags))
+			count++;
 		entries = entries->next;
 	}
+	return (count);
 }
 
+static t_entries	*get_visible_at(t_entries *entries, t_flags *flags, int index)
+{
+	while (entries)
+	{
+		if (is_visible(entries, flags))
+		{
+			if (index == 0)
+				return (entries);
+			index--;
+		}
+		entries = entries->next;
+	}
+	return (NULL);
+}
+
+static int	get_compact_width(t_entries *entries, t_flags *flags)
+{
+	int	width;
+
+	width = 0;
+	while (entries)
+	{
+		if (is_visible(entries, flags))
+		{
+			if (width > 0)
+				width += 2;
+			width += ft_strlen(entries->entry->d_name);
+		}
+		entries = entries->next;
+	}
+	return (width);
+}
+
+static void	print_compact_row(t_entries *entries, t_flags *flags)
+{
+	int	first;
+
+	first = 1;
+	while (entries)
+	{
+		if (is_visible(entries, flags))
+		{
+			if (!first)
+				ft_putstr_fd("  ", 1);
+			ft_putstr_fd(entries->entry->d_name, 1);
+			first = 0;
+		}
+		entries = entries->next;
+	}
+	ft_putchar_fd('\n', 1);
+}
+
+static int	get_column_width(t_entries *entries, t_flags *flags, int layout[3],
+		int col)
+{
+	t_entries	*entry;
+	int			width;
+	int			len;
+	int			row;
+
+	width = 0;
+	row = 0;
+	while (row < layout[0])
+	{
+		entry = get_visible_at(entries, flags, col * layout[0] + row);
+		if (entry)
+		{
+			len = ft_strlen(entry->entry->d_name);
+			if (len > width)
+				width = len;
+		}
+		row++;
+	}
+	return (width);
+}
+
+static int	layout_width(t_entries *entries, t_flags *flags, int layout[3])
+{
+	int	width;
+	int	col;
+
+	width = 0;
+	col = 0;
+	while (col < layout[1])
+	{
+		if (col > 0)
+			width += 2;
+		width += get_column_width(entries, flags, layout, col);
+		col++;
+	}
+	return (width);
+}
+
+static void	set_column_layout(t_entries *entries, t_flags *flags, int layout[3])
+{
+	int	terminal_width;
+
+	terminal_width = get_terminal_width();
+	layout[1] = layout[2];
+	while (layout[1] > 1)
+	{
+		layout[0] = (layout[2] + layout[1] - 1) / layout[1];
+		if (layout_width(entries, flags, layout) <= terminal_width)
+			return ;
+		layout[1]--;
+	}
+	layout[0] = layout[2];
+}
+
+static void	print_column_row(t_entries *entries, t_flags *flags, int row,
+		int layout[3])
+{
+	t_entries	*entry;
+	int			col;
+	int			index;
+	int			width;
+
+	col = 0;
+	while (col < layout[1])
+	{
+		index = col * layout[0] + row;
+		entry = get_visible_at(entries, flags, index);
+		if (entry)
+		{
+			if (col + 1 < layout[1]
+				&& (col + 1) * layout[0] + row < layout[2])
+			{
+				width = get_column_width(entries, flags, layout, col);
+				print_left_field(entry->entry->d_name, width);
+				ft_putstr_fd("  ", 1);
+			}
+			else
+				ft_putstr_fd(entry->entry->d_name, 1);
+		}
+		col++;
+	}
+	ft_putchar_fd('\n', 1);
+}
+
+static void	list_columns(t_entries *entries, t_flags *flags)
+{
+	int	layout[3];
+	int	row;
+
+	layout[2] = count_visible(entries, flags);
+	if (layout[2] == 0)
+		return ;
+	if (get_compact_width(entries, flags) <= get_terminal_width())
+	{
+		print_compact_row(entries, flags);
+		return ;
+	}
+	set_column_layout(entries, flags, layout);
+	row = 0;
+	while (row < layout[0])
+	{
+		print_column_row(entries, flags, row, layout);
+		row++;
+	}
+}
 
 void	list_entries(t_entries *entries, t_flags *flags)
 {
 	if (flags->l_list || flags->g_list)
 		list_long(entries, flags);
-	else if (!isatty(1) || flags->f_1)
+	else if (!isatty(1) || (flags->f_1 && !flags->C_list))
 		list_one_per_line(entries, flags);
 	else
 		list_columns(entries, flags);
