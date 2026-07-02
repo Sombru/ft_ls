@@ -183,6 +183,24 @@ static void	print_left_field(char *str, int width)
 	free(format);
 }
 
+static void	print_padding(int count)
+{
+	while (count > 0)
+	{
+		ft_putchar_fd(' ', 1);
+		count--;
+	}
+}
+
+static void	print_padded_name(t_entries *entry, int width)
+{
+	int	name_len;
+
+	name_len = ft_strlen(get_display_name(entry));
+	print_name(entry);
+	print_padding(width - name_len);
+}
+
 static void	list_one_per_line(t_entries *entries, t_flags *flags)
 {
 	while (entries)
@@ -518,7 +536,7 @@ static void	print_column_row(t_entries *entries, t_flags *flags, int row,
 				&& (col + 1) * layout[0] + row < layout[2])
 			{
 				width = get_column_width(entries, flags, layout, col);
-				print_left_field(get_display_name(entry), width);
+				print_padded_name(entry, width);
 				ft_putstr_fd("  ", 1);
 			}
 			else

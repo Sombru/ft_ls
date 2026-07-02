@@ -2,9 +2,37 @@
 
 // typedef int (*t_cmp_entries)(t_entries *a, t_entries *b);
 
+static char	*get_basename(char *name)
+{
+	char	*base;
+
+	base = ft_strrchr(name, '/');
+	if (base)
+		return (base + 1);
+	return (name);
+}
+
+static char	*get_sort_name(t_entries *entry)
+{
+	char	*name;
+
+	if (entry->is_argument)
+		name = get_basename(entry->path);
+	else
+		name = entry->entry->d_name;
+	if (name[0] == '.' && name[1] && !(name[1] == '.' && !name[2]))
+		return (name + 1);
+	return (name);
+}
+
 static int	cmp_alpha(t_entries *a, t_entries *b)
 {
-	return (ft_strcmp(a->entry->d_name, b->entry->d_name));
+	int	result;
+
+	result = ft_strcmp(get_sort_name(a), get_sort_name(b));
+	if (result)
+		return (result);
+	return (ft_strcmp(get_basename(a->path), get_basename(b->path)));
 }
 
 static int	cmp_time(t_entries *a, t_entries *b)
