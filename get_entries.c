@@ -1,4 +1,5 @@
 #include "ft_ls.h"
+#include <errno.h>
 
 void free_entries(t_entries *entries)
 {
@@ -51,6 +52,33 @@ static t_entries *new_entry(const struct dirent *dir_entry, char *path,
 	return (new);
 }
 
+static t_entries	*get_argument_entry(const char *path, int opendir_errno,
+		int allow_dir)
+{
+	struct dirent	dir_entry;
+	struct stat		st;
+	t_entries		*entry;
+
+	if (lstat(path, &st) == -1)
+	{
+		perror(path);
+		return (NULL);
+	}
+	if (!allow_dir && S_ISDIR(st.st_mode))
+	{
+		errno = opendir_errno;
+		perror(path);
+		return (NULL);
+	}
+	ft_bzero(&dir_entry, sizeof(dir_entry));
+	dir_entry.d_type = get_dtype(st.st_mode);
+	ft_strlcpy(dir_entry.d_name, path, sizeof(dir_entry.d_name));
+	entry = new_entry(&dir_entry, (char *)path, &st);
+	if (entry)
+		entry->is_argument = true;
+	return (entry);
+}
+
 int append_entry(t_entries **entries, t_entries *new)
 {
 	t_entries *current;
@@ -69,7 +97,7 @@ int append_entry(t_entries **entries, t_entries *new)
 	return (1);
 }
 
-t_entries *get_entries(const char *path)
+t_entries *get_entries(const char *path, t_flags *flags)
 {
 	struct dirent *dir_entry;
 	struct stat st;
@@ -78,12 +106,11 @@ t_entries *get_entries(const char *path)
 	char *entry_path;
 	DIR *dir;
 
+	if (flags->d_directories)
+		return (get_argument_entry(path, 0, 1));
 	dir = opendir(path);
 	if (!dir)
-	{
-		perror(path);
-		return (NULL);
-	}
+		return (get_argument_entry(path, errno, 0));
 
 	entries = NULL;
 	dir_entry = readdir(dir);

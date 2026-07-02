@@ -33,21 +33,24 @@ typedef struct s_entries
 	struct dirent		*entry;
 	char				*path;
 	struct stat			st;
+	bool				is_argument;
 	struct s_entries	*next;
 	
-} t_entries;
+}	t_entries;
 
 
+char	**get_dirs(t_entries *entries, int dir_count, char *parent_path);
 char	**parse_ls(t_flags *flags, int argc, char *argv[]);
-t_entries	*get_entries(const char *path);
+int		count_dirs(t_entries *entries);
 int		append_entry(t_entries **entries, t_entries *new);
 void	list_entries(t_entries *entries, t_flags *flags);
 void	free_entries(t_entries *entries);
+void	ft_ls(t_flags *flags, char **args, int argc);
 void	print_flags(const t_flags *flags);
 void	print_array(char **array);
 
-char	**get_dirs(t_entries *entries, int dir_count, char *parent_path);
-int		count_dirs(t_entries *entries);
+unsigned char	get_dtype(mode_t mode);
+t_entries	*get_entries(const char *path, t_flags *flags);
 t_entries *sort(t_entries *entries, t_flags *flags);
 
 #endif

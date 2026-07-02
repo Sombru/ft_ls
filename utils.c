@@ -1,5 +1,25 @@
 #include "ft_ls.h"
 
+unsigned char	get_dtype(mode_t mode)
+{
+	if (S_ISDIR(mode))
+		return (DT_DIR);
+	if (S_ISLNK(mode))
+		return (DT_LNK);
+	if (S_ISREG(mode))
+		return (DT_REG);
+	if (S_ISCHR(mode))
+		return (DT_CHR);
+	if (S_ISBLK(mode))
+		return (DT_BLK);
+	if (S_ISFIFO(mode))
+		return (DT_FIFO);
+	if (S_ISSOCK(mode))
+		return (DT_SOCK);
+	return (DT_UNKNOWN);
+}
+
+
 static char	*join_path(char *parent, char *child)
 {
 	char	*tmp;
@@ -21,6 +41,11 @@ int count_dirs(t_entries *entries)
 	int count = 0;
 	while (entries)
 	{
+		if (entries->is_argument)
+		{
+			entries = entries->next;
+			continue;
+		}
 		if (!ft_strcmp(entries->entry->d_name, ".") || 
 			!ft_strcmp(entries->entry->d_name, ".."))
 		{
@@ -46,6 +71,11 @@ char **get_dirs(t_entries *entries, int dir_count, char *parent_path)
 		return (NULL);
 	while (entries)
 	{
+		if (entries->is_argument)
+		{
+			entries = entries->next;
+			continue;
+		}
 		if (!ft_strcmp(entries->entry->d_name, ".") || 
 			!ft_strcmp(entries->entry->d_name, ".."))
 		{
@@ -67,3 +97,5 @@ char **get_dirs(t_entries *entries, int dir_count, char *parent_path)
 
 	return names;
 }
+
+

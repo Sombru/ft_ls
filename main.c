@@ -1,38 +1,113 @@
 #include "ft_ls.h"
 
+static int	count_entries(t_entries *entries)
+{
+	int	count;
+
+	count = 0;
+	while (entries)
+	{
+		count++;
+		entries = entries->next;
+	}
+	return (count);
+}
+
+static t_entries	*get_operand_entries(t_flags *flags, char **args, int argc)
+{
+	t_entries	*entries;
+	t_entries	*entry;
+	t_flags		arg_flags;
+
+	arg_flags = *flags;
+	arg_flags.d_directories = true;
+	entries = NULL;
+	for (int i = 0; i < argc; ++i)
+	{
+		entry = get_entries(args[i], &arg_flags);
+		if (entry && !append_entry(&entries, entry))
+			free_entries(entry);
+	}
+	return (sort(entries, flags));
+}
+
+static void	split_operands(t_entries *operands, t_entries **files,
+		t_entries **dirs)
+{
+	t_entries	*next;
+
+	*files = NULL;
+	*dirs = NULL;
+	while (operands)
+	{
+		next = operands->next;
+		operands->next = NULL;
+		if (S_ISDIR(operands->st.st_mode))
+			append_entry(dirs, operands);
+		else
+			append_entry(files, operands);
+		operands = next;
+	}
+}
+
+static void	list_recursive_dirs(t_entries *entries, t_flags *flags,
+		char *parent_path)
+{
+	char	**new_args;
+	int		dir_count;
+
+	if (!flags->R_recursive)
+		return ;
+	dir_count = count_dirs(entries);
+	new_args = get_dirs(entries, dir_count, parent_path);
+	if (new_args)
+		ft_ls(flags, new_args, dir_count);
+}
+
+static void	list_directory_operand(t_entries *dir, t_flags *flags,
+		int print_header)
+{
+	t_entries	*entries;
+
+	if (print_header)
+		ft_printf("%s:\n", dir->path);
+	entries = get_entries(dir->path, flags);
+	entries = sort(entries, flags);
+	list_entries(entries, flags);
+	list_recursive_dirs(entries, flags, dir->path);
+	free_entries(entries);
+}
+
 // single entrypoint for simple recursion
 void ft_ls(t_flags *flags, char **args, int argc)
 {
-	// array of entries linked list 
-	t_entries **entries_arr = malloc(sizeof(t_entries *) * argc);
-	if (!entries_arr)
+	t_entries	*operands;
+	t_entries	*files;
+	t_entries	*dirs;
+	t_entries	*current;
+	int			print_headers;
+
+	operands = get_operand_entries(flags, args, argc);
+	if (flags->d_directories)
 	{
+		if (operands)
+			list_entries(operands, flags);
+		free_entries(operands);
 		ft_free_array(args);
 		return ;
 	}
-	// print_array(args);
-	for (int i = 0; i < argc; ++i)
+	split_operands(operands, &files, &dirs);
+	if (files)
+		list_entries(files, flags);
+	print_headers = (files || count_entries(dirs) > 1 || flags->R_recursive);
+	current = dirs;
+	while (current)
 	{
-		entries_arr[i] = get_entries(args[i]);
-		entries_arr[i] = sort(entries_arr[i], flags);
-		if (argc > 1 || flags->R_recursive)
-			ft_printf("%s:\n", args[i]);
-		list_entries(entries_arr[i], flags);
+		list_directory_operand(current, flags, print_headers);
+		current = current->next;
 	}
-	if (flags->R_recursive)
-	{
-		for (int i = 0; i < argc; ++i)
-		{
-			int dir_count = count_dirs(entries_arr[i]);
-			char **new_args = get_dirs(entries_arr[i], dir_count, args[i]);
-			// print_array(new_args);
-			if (new_args)
-				ft_ls(flags, new_args, dir_count);
-		}
-	}
-	for (int i = 0; i < argc; ++i)
-		free_entries(entries_arr[i]);
-	free(entries_arr);
+	free_entries(files);
+	free_entries(dirs);
 	ft_free_array(args);
 }
 

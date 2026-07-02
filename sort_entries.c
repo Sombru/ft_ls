@@ -74,6 +74,7 @@ static t_entries	*merge_lists(t_entries *a, t_entries *b, int (*cmp)(t_entries *
 	return (dummy.next);
 }
 
+// merge sort
 static t_entries	*sort_entries(t_entries *list, int (*cmp)(t_entries *a, t_entries *b))
 {
 	t_entries	*left;

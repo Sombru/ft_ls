@@ -1,8 +1,58 @@
 #include "ft_ls.h"
 
+#define C_RESET     "\033[0m"
+#define C_BLUE      "\033[34m"
+#define C_CYAN      "\033[36m"
+#define C_GREEN     "\033[32m"
+#define C_YELLOW    "\033[33m"
+#define C_MAGENTA   "\033[35m"
+#define C_DEV       "\033[33;40m"
+
+const char	*get_color(t_entries *entry)
+{
+	mode_t	mode;
+
+	mode = entry->st.st_mode;
+	if (S_ISDIR(mode))
+		return (C_BLUE);
+	if (S_ISLNK(mode))
+		return (C_CYAN);
+	if (S_ISFIFO(mode))
+		return (C_YELLOW);
+	if (S_ISSOCK(mode))
+		return (C_MAGENTA);
+	if (S_ISBLK(mode) || S_ISCHR(mode))
+		return (C_DEV);
+	if (S_ISREG(mode) && (mode & (S_IXUSR | S_IXGRP | S_IXOTH)))
+		return (C_GREEN);
+	return ("");
+}
+
+static char	*get_display_name(t_entries *entry)
+{
+	if (entry->is_argument)
+		return (entry->path);
+	return (entry->entry->d_name);
+}
+
+static void	print_name(t_entries *entry)
+{
+	const char	*color;
+
+	color = get_color(entry);
+	if (*color)
+		ft_printf("%s%s%s",
+			color,
+			get_display_name(entry),
+			C_RESET);
+	else
+		ft_printf("%s", get_display_name(entry));
+}
+
 static int	is_visible(t_entries *entry, t_flags *flags)
 {
-	return (flags->a_all || entry->entry->d_name[0] != '.');
+	return (entry->is_argument || flags->a_all
+		|| entry->entry->d_name[0] != '.');
 }
 
 static int	get_terminal_width(void)
@@ -138,7 +188,10 @@ static void	list_one_per_line(t_entries *entries, t_flags *flags)
 	while (entries)
 	{
 		if (is_visible(entries, flags))
-			ft_putendl_fd(entries->entry->d_name, 1);
+		{
+			print_name(entries);
+			ft_putchar_fd('\n', 1);
+		}
 		entries = entries->next;
 	}
 }
@@ -299,7 +352,7 @@ static void	print_long_entry(t_entries *entry, t_flags *flags, int widths[4])
 	print_right_field(entry->st.st_size, widths[3]);
 	ft_putchar_fd(' ', 1);
 	print_time(entry->st.st_mtime);
-	ft_putstr_fd(entry->entry->d_name, 1);
+	print_name(entry);
 	print_symlink_target(entry);
 	ft_putchar_fd('\n', 1);
 }
@@ -309,9 +362,12 @@ static void	list_long(t_entries *entries, t_flags *flags)
 	int	widths[4];
 
 	get_long_widths(entries, flags, widths);
-	ft_putstr_fd("total ", 1);
-	print_ll(get_total_blocks(entries, flags));
-	ft_putchar_fd('\n', 1);
+	if (!entries || !entries->is_argument)
+	{
+		ft_putstr_fd("total ", 1);
+		print_ll(get_total_blocks(entries, flags));
+		ft_putchar_fd('\n', 1);
+	}
 	while (entries)
 	{
 		if (is_visible(entries, flags))
@@ -360,7 +416,7 @@ static int	get_compact_width(t_entries *entries, t_flags *flags)
 		{
 			if (width > 0)
 				width += 2;
-			width += ft_strlen(entries->entry->d_name);
+			width += ft_strlen(get_display_name(entries));
 		}
 		entries = entries->next;
 	}
@@ -378,7 +434,7 @@ static void	print_compact_row(t_entries *entries, t_flags *flags)
 		{
 			if (!first)
 				ft_putstr_fd("  ", 1);
-			ft_putstr_fd(entries->entry->d_name, 1);
+			print_name(entries);
 			first = 0;
 		}
 		entries = entries->next;
@@ -401,7 +457,7 @@ static int	get_column_width(t_entries *entries, t_flags *flags, int layout[3],
 		entry = get_visible_at(entries, flags, col * layout[0] + row);
 		if (entry)
 		{
-			len = ft_strlen(entry->entry->d_name);
+			len = ft_strlen(get_display_name(entry));
 			if (len > width)
 				width = len;
 		}
@@ -462,11 +518,11 @@ static void	print_column_row(t_entries *entries, t_flags *flags, int row,
 				&& (col + 1) * layout[0] + row < layout[2])
 			{
 				width = get_column_width(entries, flags, layout, col);
-				print_left_field(entry->entry->d_name, width);
+				print_left_field(get_display_name(entry), width);
 				ft_putstr_fd("  ", 1);
 			}
 			else
-				ft_putstr_fd(entry->entry->d_name, 1);
+				print_name(entry);
 		}
 		col++;
 	}
