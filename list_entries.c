@@ -8,6 +8,42 @@
 #define C_MAGENTA   "\033[35m"
 #define C_DEV       "\033[33;40m"
 
+// ACL is MacOS thingy
+// static char	get_acl_indicator(const char *path)
+// {
+// 	acl_t	acl;
+
+// 	acl = acl_get_file(path, ACL_TYPE_ACCESS);
+// 	if (!acl)
+// 		return (' ');
+
+// 	if (acl_equiv_mode(acl, NULL) != 0)
+// 	{
+// 		acl_free(acl);
+// 		return ('+');
+// 	}
+// 	acl_free(acl);
+// 	return (' ');
+// }
+
+// setfattr -n user.comment -v "Usefull comment" <file> # give a file extended attribute
+static int	has_xattr(const char *path)
+{
+	ssize_t	size;
+
+	size = listxattr(path, NULL, 0);
+	return (size > 0);
+}
+
+static char	get_attr_indicator(const char *path)
+{
+	if (has_xattr(path))
+		return ('@');
+	// if (has_acl(path))
+		// return ('+');
+	return (0);
+}
+
 const char	*get_color(t_entries *entry)
 {
 	mode_t	mode;
@@ -214,7 +250,7 @@ static void	list_one_per_line(t_entries *entries, t_flags *flags)
 	}
 }
 
-static void	get_mode_string(mode_t mode, char mode_str[11])
+static void	get_mode_string(mode_t mode, char mode_str[12], char *path)
 {
 	if (S_ISDIR(mode))
 		mode_str[0] = 'd';
@@ -239,7 +275,8 @@ static void	get_mode_string(mode_t mode, char mode_str[11])
 	mode_str[7] = (mode & S_IROTH) ? 'r' : '-';
 	mode_str[8] = (mode & S_IWOTH) ? 'w' : '-';
 	mode_str[9] = (mode & S_IXOTH) ? 'x' : '-';
-	mode_str[10] = '\0';
+	mode_str[10] = get_attr_indicator(path);
+	mode_str[11] = 0;
 }
 
 static int	get_owner_len(t_entries *entry)
@@ -359,9 +396,9 @@ static void	print_symlink_target(t_entries *entry)
 
 static void	print_long_entry(t_entries *entry, t_flags *flags, int widths[4])
 {
-	char	mode_str[11];
+	char	mode_str[12];
 
-	get_mode_string(entry->st.st_mode, mode_str);
+	get_mode_string(entry->st.st_mode, mode_str, entry->path);
 	ft_putstr_fd(mode_str, 1);
 	ft_putchar_fd(' ', 1);
 	print_right_field(entry->st.st_nlink, widths[0]);
@@ -571,9 +608,11 @@ static void	list_columns(t_entries *entries, t_flags *flags)
 
 void	list_entries(t_entries *entries, t_flags *flags)
 {
+	if (flags->C_list)
+		list_columns(entries, flags);
 	if (flags->l_list || flags->g_list)
 		list_long(entries, flags);
-	else if (!isatty(1) || (flags->f_1 && !flags->C_list))
+	else if (!isatty(1) || flags->f_1)
 		list_one_per_line(entries, flags);
 	else
 		list_columns(entries, flags);

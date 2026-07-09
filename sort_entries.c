@@ -16,12 +16,12 @@ static char	*get_sort_name(t_entries *entry)
 {
 	char	*name;
 
-	if (entry->is_argument)
-		name = get_basename(entry->path);
-	else
+	// if (entry->is_argument)
+		// name = get_basename(entry->path);
+	// else
 		name = entry->entry->d_name;
-	if (name[0] == '.' && name[1] && !(name[1] == '.' && !name[2]))
-		return (name + 1);
+	// if (name[0] == '.' && name[1] && !(name[1] == '.' && !name[2]))
+		// return (name + 1);
 	return (name);
 }
 

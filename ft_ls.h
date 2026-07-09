@@ -4,6 +4,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
+#include <sys/xattr.h>
 #include <dirent.h>
 #include <grp.h>
 #include <pwd.h>
