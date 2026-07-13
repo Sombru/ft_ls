@@ -39,6 +39,10 @@ typedef struct s_entries
 	
 }	t_entries;
 
+typedef struct s_test
+{
+	char *str
+} t_test;
 
 char	**get_dirs(t_entries *entries, int dir_count, char *parent_path);
 char	**parse_ls(t_flags *flags, int argc, char *argv[]);
@@ -50,6 +54,7 @@ void	ft_ls(t_flags *flags, char **args, int argc);
 void	print_flags(const t_flags *flags);
 void	print_array(char **array);
 
+t_entries *new_entry(const struct dirent *dir_entry, char *path, struct stat *st);
 unsigned char	get_dtype(mode_t mode);
 t_entries	*get_entries(const char *path, t_flags *flags);
 t_entries *sort(t_entries *entries, t_flags *flags);
