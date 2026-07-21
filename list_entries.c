@@ -610,7 +610,7 @@ void	list_entries(t_entries *entries, t_flags *flags)
 {
 	if (flags->C_list)
 		list_columns(entries, flags);
-	if (flags->l_list || flags->g_list)
+	else if (flags->l_list || flags->g_list)
 		list_long(entries, flags);
 	else if (!isatty(1) || flags->f_1)
 		list_one_per_line(entries, flags);

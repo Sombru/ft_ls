@@ -35,34 +35,34 @@ static char	*join_path(char *parent, char *child)
 	return (path);
 }
 
+static int	is_recursive_dir(t_entries *entry, t_flags *flags)
+{
+	if (entry->is_argument)
+		return (0);
+	if (!flags->a_all && entry->entry->d_name[0] == '.')
+		return (0);
+	if (!ft_strcmp(entry->entry->d_name, ".")
+		|| !ft_strcmp(entry->entry->d_name, ".."))
+		return (0);
+	return (entry->entry->d_type == DT_DIR);
+}
+
 // function counts directoreis in entries list
-int count_dirs(t_entries *entries)
+int count_dirs(t_entries *entries, t_flags *flags)
 {
 	int count = 0;
 	while (entries)
 	{
-		if (entries->is_argument)
-		{
-			entries = entries->next;
-			continue;
-		}
-		if (!ft_strcmp(entries->entry->d_name, ".") || 
-			!ft_strcmp(entries->entry->d_name, ".."))
-		{
-			entries = entries->next;
-			continue;
-		}
-		if (entries->entry->d_type == DT_DIR)
-		{
+		if (is_recursive_dir(entries, flags))
 			count++;
-		}
 		entries = entries->next;
 	}
 	return count;
 }
 
 
-char **get_dirs(t_entries *entries, int dir_count, char *parent_path)
+char **get_dirs(t_entries *entries, int dir_count, char *parent_path,
+		t_flags *flags)
 {
 	char **names = ft_calloc(dir_count + 1, sizeof(char *));
 	int i = 0;
@@ -71,18 +71,7 @@ char **get_dirs(t_entries *entries, int dir_count, char *parent_path)
 		return (NULL);
 	while (entries)
 	{
-		if (entries->is_argument)
-		{
-			entries = entries->next;
-			continue;
-		}
-		if (!ft_strcmp(entries->entry->d_name, ".") || 
-			!ft_strcmp(entries->entry->d_name, ".."))
-		{
-			entries = entries->next;
-			continue;
-		}
-		if (entries->entry->d_type == DT_DIR)
+		if (is_recursive_dir(entries, flags))
 		{
 			names[i] = join_path(parent_path, entries->entry->d_name);
 			if (!names[i])
@@ -97,5 +86,4 @@ char **get_dirs(t_entries *entries, int dir_count, char *parent_path)
 
 	return names;
 }
-
 

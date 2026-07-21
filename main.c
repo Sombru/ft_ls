@@ -67,8 +67,8 @@ static void	list_recursive_dirs(t_entries *entries, t_flags *flags,
 
 	if (!flags->R_recursive)
 		return ;
-	dir_count = count_dirs(entries);
-	new_args = get_dirs(entries, dir_count, parent_path);
+	dir_count = count_dirs(entries, flags);
+	new_args = get_dirs(entries, dir_count, parent_path, flags);
 	if (new_args)
 		ft_ls_impl(flags, new_args, dir_count, printed_list);
 }

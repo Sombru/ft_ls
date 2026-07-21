@@ -36,6 +36,8 @@ make_fixture()
 	printf 'alpha\n' > "$TMP_DIR/root/b_file"
 	printf 'zulu\n' > "$TMP_DIR/root/z_file"
 	printf 'hidden\n' > "$TMP_DIR/root/.hidden"
+	mkdir -p "$TMP_DIR/root/.hidden_dir"
+	printf 'secret\n' > "$TMP_DIR/root/.hidden_dir/secret"
 	printf 'inside\n' > "$TMP_DIR/root/a_dir/inside_a"
 	printf 'inside\n' > "$TMP_DIR/root/c_dir/inside_c"
 	chmod +x "$TMP_DIR/root/z_file"
@@ -109,6 +111,8 @@ run_case "mixed operands files before directories" -1 \
 run_case "reverse sort" -1r "$TMP_DIR/root"
 run_case "unsorted" -1U "$TMP_DIR/root"
 run_case "recursive" -1R "$TMP_DIR/root/a_dir" "$TMP_DIR/root/c_dir"
+run_case "recursive skips hidden dirs" -1R "$TMP_DIR/root"
+run_case "recursive all entries" -1aR "$TMP_DIR/root"
 run_case "missing path" -1 "$TMP_DIR/root/missing"
 
 printf '\n%d passed, %d failed\n' "$PASS_COUNT" "$FAIL_COUNT"
