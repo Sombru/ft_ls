@@ -30,7 +30,7 @@ static char	*join_path(const char *parent, const char *child)
 	return (path);
 }
 
-t_entries *new_entry(const struct dirent *dir_entry, char *path,
+static t_entries *new_entry(const struct dirent *dir_entry, char *path,
 		struct stat *st)
 {
 	t_entries *new;
@@ -136,35 +136,4 @@ t_entries *get_entries(const char *path, t_flags *flags)
 	}
 	closedir(dir);
 	return (entries);
-}
-
-
-t_linked_list *get_files(t_flags *flags, char **args, int argc)
-{
-	t_linked_list 	*list = linked_list_new();
-	struct stat		st;
-	for (int i = 0; i < argc; ++i)
-	{
-		if ((lstat(args[i]), &st) == -1)
-		{
-			perror(args[i]);
-			continue;
-		}
-		if (S_ISDIR(st.st_mode))
-			continue;
-		t_entries *entry;
-		struct dirent dir_entry;
-		ft_bzero(&dir_entry, sizeof(dir_entry));
-		dir_entry.d_type = get_dtype(st.st_mode);
-		ft_strlcpy(dir_entry.d_name, args[i], sizeof(dir_entry.d_name));
-		entry = new_entry(&dir_entry, args[i], &st);
-		linkedlist_add(list, entry);
-	}
-	
-}
-t_linked_list *get_dirs(t_flags *flags, char **args, int argc)
-{
-	t_linked_list *list = linked_list_new()
-	DIR *dir;
-
 }
