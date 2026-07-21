@@ -65,13 +65,13 @@
 // 	char	**new_args;
 // 	int		dir_count;
 
-// 	if (!flags->R_recursive)
-// 		return ;
-// 	dir_count = count_dirs(entries);
-// 	new_args = get_dirs(entries, dir_count, parent_path);
-// 	if (new_args)
-// 		ft_ls_impl(flags, new_args, dir_count, printed_list);
-// }
+	if (!flags->R_recursive)
+		return ;
+	dir_count = count_dirs(entries, flags);
+	new_args = get_dirs(entries, dir_count, parent_path, flags);
+	if (new_args)
+		ft_ls_impl(flags, new_args, dir_count, printed_list);
+}
 
 // static void	list_directory_operand(t_entries *dir, t_flags *flags,
 // 		int print_header, int *printed_list)

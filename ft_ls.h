@@ -44,9 +44,10 @@ typedef struct s_test
 	char *str
 } t_test;
 
-char	**get_dirs(t_entries *entries, int dir_count, char *parent_path);
+char	**get_dirs(t_entries *entries, int dir_count, char *parent_path,
+			t_flags *flags);
 char	**parse_ls(t_flags *flags, int argc, char *argv[]);
-int		count_dirs(t_entries *entries);
+int		count_dirs(t_entries *entries, t_flags *flags);
 int		append_entry(t_entries **entries, t_entries *new);
 void	list_entries(t_entries *entries, t_flags *flags);
 void	free_entries(t_entries *entries);
