@@ -30,11 +30,24 @@ run_cmd()
 	return "$status"
 }
 
+set_times()
+{
+	local path="$1"
+	local mtime="$2"
+	local atime="$3"
+
+	touch -h -t "$mtime" "$path" 2>/dev/null || touch -t "$mtime" "$path"
+	touch -a -t "$atime" "$path"
+}
+
 make_fixture()
 {
 	mkdir -p "$TMP_DIR/root/a_dir" "$TMP_DIR/root/c_dir" "$TMP_DIR/root/empty"
 	printf 'alpha\n' > "$TMP_DIR/root/b_file"
 	printf 'zulu\n' > "$TMP_DIR/root/z_file"
+	printf 'early\n' > "$TMP_DIR/root/early_file"
+	printf 'middle\n' > "$TMP_DIR/root/middle_file"
+	printf 'late\n' > "$TMP_DIR/root/late_file"
 	printf 'hidden\n' > "$TMP_DIR/root/.hidden"
 	mkdir -p "$TMP_DIR/root/.hidden_dir"
 	printf 'secret\n' > "$TMP_DIR/root/.hidden_dir/secret"
@@ -42,6 +55,21 @@ make_fixture()
 	printf 'inside\n' > "$TMP_DIR/root/c_dir/inside_c"
 	chmod +x "$TMP_DIR/root/z_file"
 	ln -s ../b_file "$TMP_DIR/root/a_dir/link_to_b" 2>/dev/null || true
+	set_times "$TMP_DIR/root/early_file" 202607010101 202607270101
+	set_times "$TMP_DIR/root/middle_file" 202607020202 202607270202
+	set_times "$TMP_DIR/root/late_file" 202607030303 202607270303
+	set_times "$TMP_DIR/root/a_dir/link_to_b" 202607041212 202607270404
+	set_times "$TMP_DIR/root/.hidden_dir/secret" 202607211111 202607270505
+	set_times "$TMP_DIR/root/a_dir/inside_a" 202607231111 202607270707
+	set_times "$TMP_DIR/root/c_dir/inside_c" 202607251111 202607270909
+	set_times "$TMP_DIR/root/.hidden_dir" 202607201010 202607270505
+	set_times "$TMP_DIR/root/.hidden" 202607211010 202607270606
+	set_times "$TMP_DIR/root/a_dir" 202607221010 202607270707
+	set_times "$TMP_DIR/root/b_file" 202607231010 202607270808
+	set_times "$TMP_DIR/root/c_dir" 202607241010 202607270909
+	set_times "$TMP_DIR/root/empty" 202607251010 202607271010
+	set_times "$TMP_DIR/root/z_file" 202607261010 202607271111
+	set_times "$TMP_DIR/root" 202607281212 202607271212
 }
 
 record_failure()
@@ -101,18 +129,32 @@ mkdir -p "$TMP_DIR"
 make_fixture
 
 run_case "one per line directory" -1 "$TMP_DIR/root"
+run_case "column output" -C "$TMP_DIR/root"
 run_case "all entries" -1a "$TMP_DIR/root"
 run_case "directory as entry" -1d "$TMP_DIR/root/a_dir"
+run_case "all directory as entry" -1ad "$TMP_DIR/root/.hidden_dir"
 run_case "file argument" -1 "$TMP_DIR/root/b_file"
 run_case "hidden file argument" -1 "$TMP_DIR/root/.hidden"
 run_case "mixed operands files before directories" -1 \
 	"$TMP_DIR/root/a_dir" "$TMP_DIR/root/b_file" \
 	"$TMP_DIR/root/c_dir" "$TMP_DIR/root/z_file"
 run_case "reverse sort" -1r "$TMP_DIR/root"
+run_case "time sort" -1t "$TMP_DIR/root"
+run_case "time reverse sort" -1tr "$TMP_DIR/root"
+run_case "access time sort" -1tu "$TMP_DIR/root"
+run_case "access time reverse sort" -1tur "$TMP_DIR/root"
 run_case "unsorted" -1U "$TMP_DIR/root"
+run_case "unsorted reverse ignored" -1Ur "$TMP_DIR/root"
+run_case "force unsorted all entries" -1f "$TMP_DIR/root"
 run_case "recursive" -1R "$TMP_DIR/root/a_dir" "$TMP_DIR/root/c_dir"
 run_case "recursive skips hidden dirs" -1R "$TMP_DIR/root"
 run_case "recursive all entries" -1aR "$TMP_DIR/root"
+run_case "long listing" -l "$TMP_DIR/root"
+run_case "long listing all" -la "$TMP_DIR/root"
+run_case "long listing symlink argument" -l "$TMP_DIR/root/a_dir/link_to_b"
+run_case "group long listing" -g "$TMP_DIR/root"
+run_case "group long listing all" -ga "$TMP_DIR/root"
+run_case "combined flags" -1alRrt "$TMP_DIR/root"
 run_case "missing path" -1 "$TMP_DIR/root/missing"
 
 printf '\n%d passed, %d failed\n' "$PASS_COUNT" "$FAIL_COUNT"
